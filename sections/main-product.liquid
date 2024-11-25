@@ -745,10 +745,7 @@
           </td>
           <td class="variant-quantity">
             <quantity-input class="quantity">
-              <button class="quantity__button no-js-hidden" name="minus" type="button">
-                <span class="visually-hidden">
-                  {{- 'products.product.quantity.decrease' | t: product: variant.title -}}
-                </span>
+              <button class="quantity__button" name="minus" type="button">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
@@ -771,10 +768,7 @@
                 value="1"
                 form="{{ product_form_id }}"
               >
-              <button class="quantity__button no-js-hidden" name="plus" type="button">
-                <span class="visually-hidden">
-                  {{- 'products.product.quantity.increase' | t: product: variant.title -}}
-                </span>
+              <button class="quantity__button" name="plus" type="button">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   aria-hidden="true"
@@ -850,6 +844,17 @@
 
   .variant-add {
     width: 200px;
+  }
+
+  .quantity__button {
+    padding: 2px;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+
+  .quantity__button svg {
+    display: block;
   }
 </style>
 

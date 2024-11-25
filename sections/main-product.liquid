@@ -724,6 +724,113 @@
   </div>
 </product-info>
 
+<div class="variant-list-wrapper">
+  <table class="variant-list">
+    <thead>
+      <tr>
+        <th>Variant</th>
+        <th>SKU</th>
+        <th>Quantity</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {%- for variant in product.variants -%}
+        <tr class="variant-row">
+          <td class="variant-title">
+            {{ variant.title }}
+          </td>
+          <td class="variant-sku">
+            <span class="text-subdued">{{ variant.sku }}</span>
+          </td>
+          <td class="variant-quantity">
+            <quantity-input class="quantity">
+              <button class="quantity__button no-js-hidden" name="minus" type="button">
+                <span class="visually-hidden">
+                  {{- 'products.product.quantity.decrease' | t: product: variant.title -}}
+                </span>
+                {% render 'icon-minus' %}
+              </button>
+              <input
+                class="quantity__input"
+                type="number"
+                name="quantity"
+                id="Quantity-{{ variant.id }}"
+                min="1"
+                value="1"
+                form="{{ product_form_id }}"
+              >
+              <button class="quantity__button no-js-hidden" name="plus" type="button">
+                <span class="visually-hidden">
+                  {{- 'products.product.quantity.increase' | t: product: variant.title -}}
+                </span>
+                {% render 'icon-plus' %}
+              </button>
+            </quantity-input>
+          </td>
+          <td class="variant-add">
+            <button
+              type="submit"
+              name="add"
+              class="button button--full-width button--secondary"
+              {% if variant.available == false %}
+                disabled
+              {% endif %}
+              form="{{ product_form_id }}"
+              data-variant-id="{{ variant.id }}"
+            >
+              <span>
+                {%- if variant.available -%}
+                  {{ 'products.product.add_to_cart' | t }}
+                {%- else -%}
+                  {{ 'products.product.sold_out' | t }}
+                {%- endif -%}
+              </span>
+            </button>
+          </td>
+        </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .variant-list-wrapper {
+    margin-top: 2rem;
+    padding: 1rem;
+    border: 1px solid rgba(var(--color-foreground), 0.1);
+    border-radius: 4px;
+  }
+
+  .variant-list {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .variant-list th {
+    text-align: left;
+    padding: 1rem;
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.1);
+  }
+
+  .variant-row td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(var(--color-foreground), 0.1);
+  }
+
+  .text-subdued {
+    color: rgba(var(--color-foreground), 0.6);
+  }
+
+  .variant-quantity {
+    width: 120px;
+  }
+
+  .variant-add {
+    width: 200px;
+  }
+</style>
+
 {% schema %}
 {
   "name": "t:sections.main-product.name",

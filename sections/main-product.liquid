@@ -72,6 +72,114 @@
     >
   {%- endif -%}
 
+    {%- if first_3d_model -%}
+    <script type="application/json" id="ProductJSON-{{ product.id }}">
+      {{ product.to_json }}
+    </script>
+    <script src="{{ 'product-model.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+
+  <div class="variant-list-wrapper">
+    <table class="variant-list">
+      <thead>
+        <tr>
+          <th>Variant</th>
+          <th>SKU</th>
+          <th>Quantity</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {%- for variant in product.variants -%}
+          <tr class="variant-row">
+            <td class="variant-title">
+              {{ variant.title }}
+            </td>
+            <td class="variant-sku">
+              <span class="text-subdued">{{ variant.sku }}</span>
+            </td>
+            <td class="variant-quantity">
+              <quantity-input class="quantity">
+                <button class="quantity__button no-js-hidden" name="minus" type="button">
+                  <span class="visually-hidden">{{ 'products.product.quantity.decrease' | t: product: variant.title }}</span>
+                  {% render 'icon-minus' %}
+                </button>
+                <input
+                  class="quantity__input"
+                  type="number"
+                  name="quantity"
+                  id="Quantity-{{ variant.id }}"
+                  min="1"
+                  value="1"
+                  form="{{ product_form_id }}"
+                >
+                <button class="quantity__button no-js-hidden" name="plus" type="button">
+                  <span class="visually-hidden">{{ 'products.product.quantity.increase' | t: product: variant.title }}</span>
+                  {% render 'icon-plus' %}
+                </button>
+              </quantity-input>
+            </td>
+            <td class="variant-add">
+              <button
+                type="submit"
+                name="add"
+                class="button button--full-width button--secondary"
+                {% if variant.available == false %}disabled{% endif %}
+                form="{{ product_form_id }}"
+                data-variant-id="{{ variant.id }}"
+              >
+                <span>
+                  {%- if variant.available -%}
+                    {{ 'products.product.add_to_cart' | t }}
+                  {%- else -%}
+                    {{ 'products.product.sold_out' | t }}
+                  {%- endif -%}
+                </span>
+              </button>
+            </td>
+          </tr>
+        {%- endfor -%}
+      </tbody>
+    </table>
+  </div>
+
+  <style>
+    .variant-list-wrapper {
+      margin-top: 2rem;
+      padding: 1rem;
+      border: 1px solid rgba(var(--color-foreground), 0.1);
+      border-radius: 4px;
+    }
+
+    .variant-list {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .variant-list th {
+      text-align: left;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(var(--color-foreground), 0.1);
+    }
+
+    .variant-row td {
+      padding: 1rem;
+      border-bottom: 1px solid rgba(var(--color-foreground), 0.1);
+    }
+
+    .text-subdued {
+      color: rgba(var(--color-foreground), 0.6);
+    }
+
+    .variant-quantity {
+      width: 120px;
+    }
+
+    .variant-add {
+      width: 200px;
+    }
+  </style>
+
   {% assign variant_images = product.images | where: 'attached_to_variant?', true | map: 'src' %}
   <div class="page-width">
     <div class="product product--{{ section.settings.media_size }} product--{{ section.settings.media_position }} product--{{ section.settings.gallery_layout }} product--mobile-{{ section.settings.mobile_thumbnails }} grid grid--1-col {% if product.media.size > 0 %}grid--2-col-tablet{% else %}product--no-media{% endif %}">

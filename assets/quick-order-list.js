@@ -384,8 +384,12 @@ if (!customElements.get('quick-order-list')) {
           this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
           const ids = Object.keys(items);
 
-          console.log('Fetch config:', fetchConfig());
-          console.log('Cart update URL:', routes.cart_update_url);
+          // Log the request details
+          console.log('Update request:', {
+            items: items,
+            ids: ids,
+            url: window.Shopify?.routes?.cart_update_url || '/cart/update.js',
+          });
 
           const body = JSON.stringify({
             updates: items,
@@ -396,34 +400,40 @@ if (!customElements.get('quick-order-list')) {
           this.updateMessage();
           this.setErrorMessage();
 
-          fetch(`${routes.cart_update_url}`, {
+          // Use window.Shopify.routes.cart_update_url as fallback
+          const cartUpdateUrl = window.Shopify?.routes?.cart_update_url || '/cart/update.js';
+
+          fetch(cartUpdateUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Accept: 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
             },
             body: body,
+            credentials: 'same-origin',
           })
             .then(async (response) => {
               if (!response.ok) {
                 const errorText = await response.text();
-                console.error('Cart update response not OK:', {
+                console.error('Cart update failed:', {
                   status: response.status,
                   statusText: response.statusText,
                   errorText: errorText,
+                  requestBody: body,
                 });
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`Cart update failed: ${response.status}`);
               }
               return response.text();
             })
             .then((state) => {
               try {
                 const parsedState = JSON.parse(state);
-                console.log('Successful cart update response:', parsedState);
+                console.log('Cart update success:', parsedState);
                 this.renderSections(parsedState, ids);
                 publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
               } catch (error) {
-                console.error('Error parsing cart response:', error);
+                console.error('Failed to parse cart response:', error, state);
                 throw error;
               }
             })

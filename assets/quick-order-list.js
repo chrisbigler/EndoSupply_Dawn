@@ -384,11 +384,8 @@ if (!customElements.get('quick-order-list')) {
           this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
           const ids = Object.keys(items);
 
-          console.log('Cart update payload:', {
-            updates: items,
-            sections: this.getSectionsToRender().map((section) => section.section),
-            sections_url: this.dataset.url,
-          });
+          console.log('Fetch config:', fetchConfig());
+          console.log('Cart update URL:', routes.cart_update_url);
 
           const body = JSON.stringify({
             updates: items,
@@ -399,9 +396,22 @@ if (!customElements.get('quick-order-list')) {
           this.updateMessage();
           this.setErrorMessage();
 
-          fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
-            .then((response) => {
+          fetch(`${routes.cart_update_url}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: body,
+          })
+            .then(async (response) => {
               if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Cart update response not OK:', {
+                  status: response.status,
+                  statusText: response.statusText,
+                  errorText: errorText,
+                });
                 throw new Error(`HTTP error! status: ${response.status}`);
               }
               return response.text();
@@ -409,6 +419,7 @@ if (!customElements.get('quick-order-list')) {
             .then((state) => {
               try {
                 const parsedState = JSON.parse(state);
+                console.log('Successful cart update response:', parsedState);
                 this.renderSections(parsedState, ids);
                 publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
               } catch (error) {

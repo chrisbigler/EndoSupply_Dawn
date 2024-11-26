@@ -235,47 +235,58 @@ if (!customElements.get('quick-order-list')) {
       }
 
       renderSections(parsedState, ids) {
-        this.ids.push(ids);
-        const intersection = this.queue.filter((element) => ids.includes(element.id));
-        if (intersection.length !== 0) return;
+        try {
+          this.ids.push(ids);
+          const intersection = this.queue.filter((element) => ids.includes(element.id));
+          if (intersection.length !== 0) return;
 
-        this.getSectionsToRender().forEach((section) => {
-          const sectionElement = document.getElementById(section.id);
-          if (
-            sectionElement &&
-            sectionElement.parentElement &&
-            sectionElement.parentElement.classList.contains('drawer')
-          ) {
-            parsedState.items.length > 0
-              ? sectionElement.parentElement.classList.remove('is-empty')
-              : sectionElement.parentElement.classList.add('is-empty');
-            setTimeout(() => {
-              document.querySelector('#CartDrawer-Overlay').addEventListener('click', this.cart.close.bind(this.cart));
-            });
-          }
-          const elementToReplace =
-            sectionElement && sectionElement.querySelector(section.selector)
-              ? sectionElement.querySelector(section.selector)
-              : sectionElement;
-          if (elementToReplace) {
-            if (section.selector === `#${this.quickOrderListId} .js-contents` && this.ids.length > 0) {
-              this.ids.flat().forEach((i) => {
-                elementToReplace.querySelector(`#Variant-${i}`).innerHTML = this.getSectionInnerHTML(
-                  parsedState.sections[section.section],
-                  `#Variant-${i}`
-                );
-              });
-            } else {
-              elementToReplace.innerHTML = this.getSectionInnerHTML(
-                parsedState.sections[section.section],
-                section.selector
-              );
+          this.getSectionsToRender().forEach((section) => {
+            const sectionElement = document.getElementById(section.id);
+            if (!sectionElement) {
+              console.warn(`Section element not found: ${section.id}`);
+              return;
             }
-          }
-        });
-        this.defineInputsAndQuickOrderTable();
-        this.addMultipleDebounce();
-        this.ids = [];
+            if (
+              sectionElement &&
+              sectionElement.parentElement &&
+              sectionElement.parentElement.classList.contains('drawer')
+            ) {
+              parsedState.items.length > 0
+                ? sectionElement.parentElement.classList.remove('is-empty')
+                : sectionElement.parentElement.classList.add('is-empty');
+              setTimeout(() => {
+                document
+                  .querySelector('#CartDrawer-Overlay')
+                  .addEventListener('click', this.cart.close.bind(this.cart));
+              });
+            }
+            const elementToReplace =
+              sectionElement && sectionElement.querySelector(section.selector)
+                ? sectionElement.querySelector(section.selector)
+                : sectionElement;
+            if (elementToReplace) {
+              if (section.selector === `#${this.quickOrderListId} .js-contents` && this.ids.length > 0) {
+                this.ids.flat().forEach((i) => {
+                  elementToReplace.querySelector(`#Variant-${i}`).innerHTML = this.getSectionInnerHTML(
+                    parsedState.sections[section.section],
+                    `#Variant-${i}`
+                  );
+                });
+              } else {
+                elementToReplace.innerHTML = this.getSectionInnerHTML(
+                  parsedState.sections[section.section],
+                  section.selector
+                );
+              }
+            }
+          });
+          this.defineInputsAndQuickOrderTable();
+          this.addMultipleDebounce();
+          this.ids = [];
+        } catch (error) {
+          console.error('Error in renderSections:', error);
+          this.setErrorMessage(window.cartStrings.error);
+        }
       }
 
       getTableHead() {
@@ -369,34 +380,54 @@ if (!customElements.get('quick-order-list')) {
       }
 
       updateMultipleQty(items) {
-        this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
-        const ids = Object.keys(items);
+        try {
+          this.querySelector('.variant-remove-total .loading__spinner')?.classList.remove('hidden');
+          const ids = Object.keys(items);
 
-        const body = JSON.stringify({
-          updates: items,
-          sections: this.getSectionsToRender().map((section) => section.section),
-          sections_url: this.dataset.url,
-        });
-
-        this.updateMessage();
-        this.setErrorMessage();
-
-        fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
-          .then((response) => {
-            return response.text();
-          })
-          .then((state) => {
-            const parsedState = JSON.parse(state);
-            this.renderSections(parsedState, ids);
-            publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
-          })
-          .catch(() => {
-            this.setErrorMessage(window.cartStrings.error);
-          })
-          .finally(() => {
-            this.querySelector('.variant-remove-total .loading__spinner')?.classList.add('hidden');
-            this.requestStarted = false;
+          console.log('Cart update payload:', {
+            updates: items,
+            sections: this.getSectionsToRender().map((section) => section.section),
+            sections_url: this.dataset.url,
           });
+
+          const body = JSON.stringify({
+            updates: items,
+            sections: this.getSectionsToRender().map((section) => section.section),
+            sections_url: this.dataset.url,
+          });
+
+          this.updateMessage();
+          this.setErrorMessage();
+
+          fetch(`${routes.cart_update_url}`, { ...fetchConfig(), ...{ body } })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              return response.text();
+            })
+            .then((state) => {
+              try {
+                const parsedState = JSON.parse(state);
+                this.renderSections(parsedState, ids);
+                publish(PUB_SUB_EVENTS.cartUpdate, { source: this.quickOrderListId, cartData: parsedState });
+              } catch (error) {
+                console.error('Error parsing cart response:', error);
+                throw error;
+              }
+            })
+            .catch((error) => {
+              console.error('Cart update error:', error);
+              this.setErrorMessage(window.cartStrings.error);
+            })
+            .finally(() => {
+              this.querySelector('.variant-remove-total .loading__spinner')?.classList.add('hidden');
+              this.requestStarted = false;
+            });
+        } catch (error) {
+          console.error('Error in updateMultipleQty:', error);
+          this.setErrorMessage(window.cartStrings.error);
+        }
       }
 
       setErrorMessage(message = null) {

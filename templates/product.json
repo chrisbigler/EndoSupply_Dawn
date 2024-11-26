@@ -60,12 +60,26 @@
             "show_gift_card_recipient": true
           }
         },
+        "complementary_Grftt7": {
+          "type": "complementary",
+          "settings": {
+            "block_heading": "Frequently Bought Together",
+            "make_collapsible_row": false,
+            "icon": "price_tag",
+            "product_list_limit": 10,
+            "products_per_page": 3,
+            "pagination_style": "dots",
+            "image_ratio": "square",
+            "enable_quick_add": true
+          }
+        },
         "description": {
           "type": "description",
           "settings": {}
         },
         "collapsible-row-0": {
           "type": "collapsible_tab",
+          "disabled": true,
           "settings": {
             "heading": "Materials",
             "icon": "leather",
@@ -75,6 +89,7 @@
         },
         "collapsible-row-1": {
           "type": "collapsible_tab",
+          "disabled": true,
           "settings": {
             "heading": "Shipping & Returns",
             "icon": "truck",
@@ -84,6 +99,7 @@
         },
         "collapsible-row-2": {
           "type": "collapsible_tab",
+          "disabled": true,
           "settings": {
             "heading": "Dimensions",
             "icon": "ruler",
@@ -93,17 +109,12 @@
         },
         "collapsible-row-3": {
           "type": "collapsible_tab",
+          "disabled": true,
           "settings": {
             "heading": "Care Instructions",
             "icon": "heart",
             "content": "",
             "page": ""
-          }
-        },
-        "share": {
-          "type": "share",
-          "settings": {
-            "share_label": "Share"
           }
         }
       },
@@ -116,12 +127,12 @@
         "quantity_selector",
         "inventory_Hykwn4",
         "buy_buttons",
+        "complementary_Grftt7",
         "description",
         "collapsible-row-0",
         "collapsible-row-1",
         "collapsible-row-2",
-        "collapsible-row-3",
-        "share"
+        "collapsible-row-3"
       ],
       "settings": {
         "enable_sticky_info": true,
@@ -137,6 +148,16 @@
         "enable_video_looping": true,
         "padding_top": 36,
         "padding_bottom": 12
+      }
+    },
+    "quick_order_list_UBmXJc": {
+      "type": "quick-order-list",
+      "settings": {
+        "show_image": false,
+        "show_sku": false,
+        "color_scheme": "",
+        "padding_top": 36,
+        "padding_bottom": 36
       }
     },
     "image-with-text": {
@@ -240,6 +261,7 @@
   },
   "order": [
     "main",
+    "quick_order_list_UBmXJc",
     "image-with-text",
     "multicolumn",
     "related-products"
